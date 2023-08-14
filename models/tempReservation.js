@@ -17,11 +17,18 @@ const tempReservationSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  days: {
+    type: Number,
+    required: true,
+    default: 1,
+  },
   checkIn: {
     type: Date,
+    required: true,
   },
   checkOut: {
     type: Date,
+    default: "1970-01-01",
   },
   numberOfChildren: {
     type: Number,

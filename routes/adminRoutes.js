@@ -91,8 +91,16 @@ router.delete("/employee/delete/:id", async (req, res) => {
     return res.status(422).json({ message: "Required fields are not filled." });
 
   try {
-    await Employee.findOneAndDelete({ _id: employeeId }).then(() => {
-      res.status(200).json({ message: "Employee deleted successfully." });
+    await Employee.findOne({ _id: employeeId }).then(async (employee) => {
+      if (employee.status === "unavailable") {
+        return res
+          .status(422)
+          .json({ message: "Employee is currently assigned to a room." });
+      } else {
+        await Employee.findOneAndDelete({ _id: employeeId }).then(() => {
+          return res.status(200).json({ message: "Success" });
+        });
+      }
     });
   } catch (error) {
     console.log(error);
@@ -196,7 +204,7 @@ router.get("/dashboard", async (req, res) => {
       totalBookings = reservations.length;
 
       reservations.forEach((reservation) => {
-        totalRevenue += reservation.price;
+        totalRevenue += reservation.price * reservation.days;
       });
     });
 
@@ -215,6 +223,17 @@ router.get("/dashboard", async (req, res) => {
     return res
       .status(500)
       .json({ message: "Error occurred while fetching dashboard details." });
+  }
+});
+
+router.get("/bookings", async (req, res) => {
+  try {
+    const reservations = await Reservation.find();
+    res.status(200).json({ message: "Success", data: reservations });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error occurred while fetching bookings." });
   }
 });
 
